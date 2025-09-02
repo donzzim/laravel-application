@@ -1,0 +1,3 @@
+Quando você tenta acessar um relacionamento (ex: $job->employer) sem tê-lo carregado explicitamente com with(), o Laravel lança uma exceção.
+
+Isso ajuda a identificar e evitar problemas de N+1 queries, forçando você a sempre carregar os relacionamentos necessários de forma explícita.

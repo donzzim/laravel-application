@@ -1,0 +1,152 @@
+------------------------- MODEL: --------------------------------------
+
+class Job extends Model
+{
+    use HasFactory;
+
+    protected $table = 'job_listing'; --> Define o nome da tabela se não seguir a convenção plural
+    protected $fillable = [
+        'title',
+        'salary'
+    ]; --> Campos que podem ser preenchidos 
+}
+
+------------------------- RELAÇÕES: --------------------------------------
+
+1. One To One (Um para Um)
+Descrição: Uma tabela se relaciona com apenas um registro em outra tabela.
+
+Exemplo: Um User tem um Profile.
+
+Como acessar:
+
+Do User para o Profile:
+
+PHP
+
+    $user = User::find(1);
+    $profile = $user->profile; // Acessa o objeto Profile
+    echo $profile->bio;
+
+Do Profile para o User:
+
+PHP
+
+    $profile = Profile::find(1);
+    $user = $profile->user; // Acessa o objeto User
+    echo $user->name;
+
+
+2. One To Many (Um para Muitos)
+Descrição: Um registro de uma tabela pode ter vários registros em outra tabela.
+
+Exemplo: Um Post tem vários Comments.
+
+Como acessar:
+
+Do Post para os Comments:
+
+PHP
+
+    $post = Post::find(1);
+    foreach ($post->comments as $comment) { // Acessa uma coleção de Comments
+        echo $comment->body;
+    }
+    
+Do Comment para o Post:
+
+PHP
+
+    $comment = Comment::find(1);
+    $post = $comment->post; // Acessa o objeto Post
+    echo $post->title;
+
+
+3. Many To Many (Muitos para Muitos)
+Descrição: Vários registros de uma tabela se relacionam com vários registros de outra. Requer uma tabela intermediária.
+
+Exemplo: Um User pode ter vários Roles (papéis) e um Role pode ter vários Users.
+
+Como acessar:
+
+Do User para os Roles:
+
+PHP
+
+    $user = User::find(1);
+    foreach ($user->roles as $role) { // Acessa uma coleção de Roles
+        echo $role->name;
+    }
+Do Role para os Users:
+
+PHP
+
+    $role = Role::find(1);
+    foreach ($role->users as $user) { // Acessa uma coleção de Users
+        echo $user->name;
+    }
+
+4. Has One Through e Has Many Through
+Descrição: Usados para relações distantes através de uma tabela intermediária.
+
+Exemplo Has One Through: Um Supplier tem um AccountHistory através do Account.
+
+Como acessar:
+
+PHP
+
+    $supplier = Supplier::find(1);
+    $history = $supplier->accountHistory; // Acessa o objeto AccountHistory
+    echo $history->balance;
+
+
+------------------ TABELAS PIVÔ ---------------------------------------
+
+Em um banco de dados relacional, uma tabela pivô é usada para resolver relacionamentos muitos para muitos (N:N). Imagine que você tem uma tabela de posts e uma tabela de tags. Um post pode ter várias tags, e uma tag pode ser associada a vários posts.
+
+Em vez de adicionar uma coluna tag_id na tabela de posts (o que não funcionaria para mais de uma tag), criamos uma terceira tabela, a tabela pivô. Essa tabela geralmente contém apenas as chaves primárias das duas tabelas que estão sendo relacionadas.
+
+3. Interagindo com os Dados
+O Laravel oferece métodos intuitivos para adicionar, remover e sincronizar os relacionamentos através do Eloquent.
+
+Anexar (attach): Adiciona um novo registro na tabela pivô.
+
+PHP
+
+    $post = Post::find(1);
+    $post->tags()->attach(2); // Anexa a tag com ID 2 ao post
+    
+Desanexar (detach): Remove um ou mais registros da tabela pivô.
+
+PHP
+
+    $post->tags()->detach(2); // Remove a associação do post com a tag ID 2
+    $post->tags()->detach(); // Remove todas as tags do post
+
+Sincronizar (sync): É o método mais poderoso. Ele adiciona e remove associações para que a lista final de IDs na tabela pivô corresponda exatamente ao array que você passa.
+
+PHP
+
+    // O post 1 terá apenas as tags com IDs 1, 2 e 3.
+    // Se ele já tivesse a tag 4, ela seria removida.
+    // Se não tivesse a tag 1, ela seria adicionada.
+    $post->tags()->sync([1, 2, 3]);
+
+Sincronizar sem desanexar (syncWithoutDetaching): Adiciona IDs que não estão na lista, mas não remove os que já existem.
+
+PHP
+
+    $post->tags()->syncWithoutDetaching([5, 6]);
+
+
+4. Trabalhando com Colunas Extras na Tabela Pivô
+Às vezes, sua tabela pivô pode precisar de colunas adicionais, como uma data de quando a associação foi criada ou um status. O Laravel permite que você trabalhe com essas colunas usando o método withPivot() na definição do relacionamento.
+
+Migração com coluna extra
+
+PHP
+
+    Schema::create('post_tag', function (Blueprint $table) {
+        // ...
+        $table->string('status')->default('active');
+    });

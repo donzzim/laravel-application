@@ -1,0 +1,73 @@
+No Laravel, as Factories (fábricas) servem para gerar dados de teste ou de desenvolvimento de forma automatizada e organizada.
+
+Pense nelas como a "linha de produção" do seu banco de dados. Em vez de inserir dados manualmente em cada tabela para testar uma funcionalidade, você usa uma factory para criar registros de maneira rápida e consistente.
+
+A função number_format() do PHP tem a seguinte sintaxe:
+
+    number_format(float $num, int $decimals = 0, string $decimal_separator = ".", string $thousands_separator = ",")
+
+    0: O segundo argumento é o número de casas decimais. Como salários geralmente não têm centavos, passamos 0.
+
+    .: O terceiro argumento é o separador decimal. Neste caso, usamos . (ponto).
+
+    ,: O quarto argumento é o separador de milhar. Usamos , (vírgula) para separar as casas.
+
+Como a solução funciona:
+
+    fake()->numberBetween(50000, 150000): Primeiro, um número aleatório é gerado, exemplo, 67890.
+
+    / 1000: O número é dividido por 1.000, resultando em 67.89.
+
+    floor(...): A função floor arredonda esse número para baixo, para 67.
+
+    * 1000: O resultado é multiplicado novamente por 1.000, o que nos dá o número fiarredondado, 67000.
+
+    number_format(...): Por fim, a função number_format é aplicada para adicionar a vírgcomo separador de milhar, resultando em $67,000.
+
+Dessa forma, todos os salários gerados serão sempre redondos, como $50,000 ou $120,000.
+
+
+
+------------------ EXEMPLOS -----------------------------------------
+
+class UserFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'first-name' => fake()->firstName(),
+            'last-name' => fake()->lastName(),
+            'email' => fake()->unique()->safeEmail(),
+            'email_verified_at' => now(),
+            'password' => static::$password ??= Hash::make('password'),
+            'remember_token' => Str::random(10),
+            'admin' => false <---------- PARTE DO EXEMPLO
+        ];
+    }
+
+    Para quando o timeStamps do email seja gerado nulo
+
+    public function unverified(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'email_verified_at' => null,
+        ]);
+
+        COMANDO -> //User::factory()->unverified()->create();
+    }
+
+    Exemplo de admin: para quando quiser criar um usuario admin
+
+    public function admin(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'admin' => true,
+        ]);
+        
+        COMANDO -> //User::factory()->admin()->create();
+    }
+}
+
+COMANDO PARA GERAR OS FAKES:
+
+App\Model\(Model que vc quer)::factory(numero de rows que quer criar)->create()
