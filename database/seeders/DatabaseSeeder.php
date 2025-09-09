@@ -19,8 +19,8 @@ class DatabaseSeeder extends Seeder
         // php artisan migrate:fresh --seed
 
         User::factory()->create([
-            'first-name' => 'Lucas',
-            'last-name' => 'Santos',
+            'first_name' => 'Lucas',
+            'last_name' => 'Santos',
             'email' => 'test@example.com',
         ]);
 
